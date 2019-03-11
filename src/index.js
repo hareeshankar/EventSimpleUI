@@ -18,24 +18,24 @@ class LoginForm extends React.Component {
 
   handleSignIn(e) {
     e.preventDefault();
-    let username = this.refs.username.value;
-    let password = this.refs.password.value;
+    let username = this.refs.uname.value;
+    let password = this.refs.pwd.value;
     this.props.onSignIn(username, password);
   }
   handleSignUp(e) {
     e.preventDefault();
-    let email = this.refs.email;
+    let email = this.refs.email.value;
     let username = this.refs.username.value;
     let password = this.refs.password.value;
-    this.props.onSignIn(username, password);
+    this.props.onSignUp(email, username, password);
   }
   render() {
     return (
       <div>
         <form onSubmit={this.handleSignIn.bind(this)}>
           <h3>Sign in</h3>
-          <input type="text" ref="username" placeholder="enter you username" />
-          <input type="password" ref="password" placeholder="enter password" />
+          <input type="text" ref="uname" placeholder="enter you username" />
+          <input type="password" ref="pwd" placeholder="enter password" />
           <input type="submit" value="Login" />
         </form>
         <h1>New User ?</h1>
@@ -56,6 +56,8 @@ class App extends React.Component {
     super(props);
     // the initial application state
     this.state = {
+      sdata: null,
+      ldata: null,
       user: null
     };
   }
@@ -65,13 +67,42 @@ class App extends React.Component {
     // This is where you would call Firebase, an API etc...
     // calling setState will re-render the entire app (efficiently!)
     this.setState({
-      user: {
-        username,
-        password
+      ldata: {
+        username: username,
+        password: password
       }
     });
   }
+  signUp(email, username, password) {
+    // This is where you would call Firebase, an API etc...
+    // calling setState will re-render the entire app (efficiently!)
+    this.setState({
+      sdata: {
+        realm: "EM",
+        username: username,
+        email: email,
+        password: password,
+        emailVerified: true
+      }
+    });
 
+    let axiosConfig = {
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+        "Access-Control-Allow-Origin": "*",
+      }
+    };
+
+    Eaxios.post('http://<host>:<port>/<path>', this.state.data, axiosConfig)
+      .then((res) => {
+        console.log("RESPONSE RECEIVED: ", res);
+      })
+      .catch((err) => {
+        console.log("AXIOS ERROR: ", err);
+      })
+
+
+  }
   signOut() {
     // clear out user from state
     this.setState({ user: null });
@@ -87,7 +118,7 @@ class App extends React.Component {
         {this.state.user ? (
           <Welcome user={this.state.user} onSignOut={this.signOut.bind(this)} />
         ) : (
-          <LoginForm onSignIn={this.signIn.bind(this)} />
+          <LoginForm onSignIn={this.signIn.bind(this)} onSignUp={this.signUp.bind(this)} />
         )}
       </div>
     );
