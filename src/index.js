@@ -5,7 +5,9 @@ const Welcome = ({ user, onSignOut }) => {
   // This is a dumb "stateless" component
   return (
     <div>
-      Welcome <strong>{user.username}</strong>!
+      Welcome <strong>{user.username}</strong>! <br />
+      <br />
+      <p>{JSON.stringify(user)}</p>
       <a href="javascript:;" onClick={onSignOut}>
         Sign out
       </a>
@@ -18,9 +20,9 @@ class LoginForm extends React.Component {
 
   handleSignIn(e) {
     e.preventDefault();
-    let username = this.refs.uname.value;
-    let password = this.refs.pwd.value;
-    this.props.onSignIn(username, password);
+    let uname = this.refs.uname.value;
+    let pwd = this.refs.pwd.value;
+    this.props.onSignIn(uname, pwd);
   }
   handleSignUp(e) {
     e.preventDefault();
@@ -39,7 +41,7 @@ class LoginForm extends React.Component {
           <input type="submit" value="Login" />
         </form>
         <h1>New User ?</h1>
-        <form onSubmit={this.handleSignIn.bind(this)}>
+        <form onSubmit={this.handleSignUp.bind(this)}>
           <h3>Sign Up</h3>
           <input type="text" ref="email" placeholder="Email ID" />
           <input type="text" ref="username" placeholder="enter you username" />
@@ -58,50 +60,103 @@ class App extends React.Component {
     this.state = {
       sdata: null,
       ldata: null,
-      user: null
+      user: null,
+      tokend: null
     };
   }
 
   // App "actions" (functions that modify state)
-  signIn(username, password) {
+  signIn(uname, pwd) {
     // This is where you would call Firebase, an API etc...
     // calling setState will re-render the entire app (efficiently!)
-    this.setState({
-      ldata: {
-        username: username,
-        password: password
+    console.log("Form data: ", uname + pwd);
+
+    let lldata = {
+      username: uname,
+      password: pwd
+    };
+    this.setState(state => ({ ldata: lldata }));
+    //this.state.ldata = lldata;
+    let axiosConfig = {
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Access-Control-Allow-Origin": "*"
       }
-    });
+    };
+    console.log("Ldata: ", JSON.stringify(this.state.ldata));
+    Eaxios.post(
+      "https://eventmanagerapi.herokuapp.com/api/Users/login",
+      this.state.ldata,
+      axiosConfig
+    )
+      .then(res => {
+        console.log("RESPONSE RECEIVED: ", res);
+        this.setState({
+          user: res.data
+        });
+        this.setState(state => ({ tokend: res.data.id }));
+        let getUserURL =
+          "https://eventmanagerapi.herokuapp.com/api/Users/" + res.data.userId;
+        Eaxios.post(getUserURL, this.state.tokend, axiosConfig)
+          .then(res => {
+            console.log("RESPONSE RECEIVED: ", res);
+            this.setState({
+              user: {
+                realm: res.data.realm,
+                username: res.data.username,
+                email: res.data.email,
+                emailVerified: false,
+                userId: res.data.id
+              }
+            });
+          })
+          .catch(err => {
+            console.log("AXIOS ERROR: ", err);
+          });
+      })
+      .catch(err => {
+        console.log("AXIOS ERROR: ", err);
+      });
   }
   signUp(email, username, password) {
     // This is where you would call Firebase, an API etc...
     // calling setState will re-render the entire app (efficiently!)
-    this.setState({
-      sdata: {
-        realm: "EM",
-        username: username,
-        email: email,
-        password: password,
-        emailVerified: true
-      }
-    });
+    let ssdata: {
+      realm: "EM",
+      username: username,
+      email: email,
+      password: password,
+      emailVerified: false
+    };
 
+    this.setState(state => ({ sdata: ssdata }));
     let axiosConfig = {
       headers: {
-        'Content-Type': 'application/json;charset=UTF-8',
-        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Access-Control-Allow-Origin": "*"
       }
     };
 
-    Eaxios.post('http://<host>:<port>/<path>', this.state.data, axiosConfig)
-      .then((res) => {
+    Eaxios.post(
+      "https://eventmanagerapi.herokuapp.com/api/Users",
+      this.state.sdata,
+      axiosConfig
+    )
+      .then(res => {
         console.log("RESPONSE RECEIVED: ", res);
+        this.setState({
+          user: {
+            realm: res.data.realm,
+            username: res.data.username,
+            email: res.data.email,
+            emailVerified: false,
+            userId: res.data.id
+          }
+        });
       })
-      .catch((err) => {
+      .catch(err => {
         console.log("AXIOS ERROR: ", err);
-      })
-
-
+      });
   }
   signOut() {
     // clear out user from state
@@ -118,7 +173,10 @@ class App extends React.Component {
         {this.state.user ? (
           <Welcome user={this.state.user} onSignOut={this.signOut.bind(this)} />
         ) : (
-          <LoginForm onSignIn={this.signIn.bind(this)} onSignUp={this.signUp.bind(this)} />
+          <LoginForm
+            onSignIn={this.signIn.bind(this)}
+            onSignUp={this.signUp.bind(this)}
+          />
         )}
       </div>
     );
