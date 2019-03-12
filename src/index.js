@@ -59,7 +59,6 @@ class App extends React.Component {
     // the initial application state
     this.state = {
       sdata: null,
-      ldata: null,
       user: null,
       tokend: null
     };
@@ -75,7 +74,6 @@ class App extends React.Component {
       username: uname,
       password: pwd
     };
-    this.setState(state => ({ ldata: lldata }));
     //this.state.ldata = lldata;
     let axiosConfig = {
       headers: {
@@ -83,21 +81,22 @@ class App extends React.Component {
         "Access-Control-Allow-Origin": "*"
       }
     };
-    console.log("Ldata: ", JSON.stringify(this.state.ldata));
+    console.log("Ldata: ", JSON.stringify(lldata));
     Eaxios.post(
       "https://eventmanagerapi.herokuapp.com/api/Users/login",
-      this.state.ldata,
+      lldata,
       axiosConfig
     )
       .then(res => {
         console.log("RESPONSE RECEIVED: ", res);
-        this.setState({
-          user: res.data
-        });
         this.setState(state => ({ tokend: res.data.id }));
+        console.log("Token: ", this.state.tokend);
         let getUserURL =
-          "https://eventmanagerapi.herokuapp.com/api/Users/" + res.data.userId;
-        Eaxios.post(getUserURL, this.state.tokend, axiosConfig)
+          "https://eventmanagerapi.herokuapp.com/api/Users/" +
+          res.data.userId +
+          "?access_token=" +
+          this.state.tokend;
+        Eaxios.get(getUserURL, axiosConfig)
           .then(res => {
             console.log("RESPONSE RECEIVED: ", res);
             this.setState({
