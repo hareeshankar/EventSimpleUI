@@ -3,70 +3,34 @@ import ReactDOM from "react-dom";
 import Eaxios from "axios";
 import { loadProgressBar } from "axios-progress-bar";
 import "axios-progress-bar/dist/nprogress.css";
+import "materialize-css/dist/css/materialize.min.css";
+import LoginForm from "./LoginForm.js";
 
-const Welcome = ({ user, token, onSignOut }) => {
+const Welcome = ({ user, token }) => {
   // This is a dumb "stateless" component
   return (
-    <div>
+    <div className="white-text">
       Welcome <strong>{user.username}</strong>! <br />
       <br />
       <p>{JSON.stringify(user)}</p> <br />
       <br />
       <p>Token : {token} </p>
-      <a href="javascript:;" onClick={onSignOut}>
-        Sign out
-      </a>
     </div>
   );
 };
-const ErrMesg = ({ errmsg }) => {
+
+const SignOutBtn = ({ user, token, onSignOut }) => {
   // This is a dumb "stateless" component
-  return (
-    <div>
-      <strong>{errmsg}</strong>! <br />
+  return token ? (
+    <div Style="display: inline-block; padding: 0px 10px 0px 10px; border: 1px solid #EEE;">
+      <button className="btn waves-effect waves-light">
+        <span href="javascript:;" onClick={onSignOut}>
+          Sign out
+        </span>
+      </button>
     </div>
-  );
+  ) : null;
 };
-class LoginForm extends React.Component {
-  // Using a class based component here because we're accessing DOM refs
-
-  handleSignIn(e) {
-    e.preventDefault();
-    let uname = this.refs.uname.value;
-    let pwd = this.refs.pwd.value;
-    this.props.onSignIn(uname, pwd);
-  }
-  handleSignUp(e) {
-    e.preventDefault();
-    let eml = this.refs.eml.value;
-    let username = this.refs.username.value;
-    let password = this.refs.password.value;
-    this.props.onSignUp(eml, username, password);
-  }
-
-  render() {
-    return (
-      <div>
-        <form onSubmit={this.handleSignIn.bind(this)}>
-          <h3>Sign in</h3>
-          <input type="text" ref="uname" placeholder="enter you username" />
-          <input type="password" ref="pwd" placeholder="enter password" />
-          <input type="submit" value="Login" />
-        </form>
-        <h1>New User ?</h1>
-        <form onSubmit={this.handleSignUp.bind(this)}>
-          <h3>Sign Up</h3>
-          <input type="text" ref="eml" placeholder="Email ID" />
-          <input type="text" ref="username" placeholder="enter you username" />
-          <input type="password" ref="password" placeholder="enter password" />
-          <input type="submit" value="Sign up" />
-        </form>
-        <ErrMesg errmsg={this.props.errmsg} />
-      </div>
-    );
-  }
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -237,7 +201,7 @@ class App extends React.Component {
   }
   signOut() {
     // clear out user from state
-    this.setState({ user: null });
+    this.setState({ user: null, token: null });
   }
 
   render() {
@@ -246,13 +210,24 @@ class App extends React.Component {
     // make sure we keep our scope to App
     return (
       <div>
-        <h1>Event Manager</h1>
+        <nav>
+          <div className="nav-wrapper">
+            <span href="/" className="brand-logo center">
+              Event Manager
+            </span>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li>
+                <SignOutBtn
+                  user={this.state.user}
+                  token={this.state.tokend}
+                  onSignOut={this.signOut.bind(this)}
+                />
+              </li>
+            </ul>
+          </div>
+        </nav>
         {this.state.user ? (
-          <Welcome
-            user={this.state.user}
-            token={this.state.tokend}
-            onSignOut={this.signOut.bind(this)}
-          />
+          <Welcome user={this.state.user} token={this.state.tokend} />
         ) : (
           <LoginForm
             onSignIn={this.signIn.bind(this)}

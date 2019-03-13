@@ -1,0 +1,8 @@
+body {
+  background-image: url("https://uploads.codesandbox.io/uploads/user/d2775d10-f6a8-4d75-910f-c817e9e6bba8/OS4Y-ebg.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  z-index: -1;
+}
