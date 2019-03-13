@@ -22,8 +22,8 @@ const Welcome = ({ user, token }) => {
 const SignOutBtn = ({ user, token, onSignOut }) => {
   // This is a dumb "stateless" component
   return token ? (
-    <div Style="display: inline-block; padding: 0px 10px 0px 10px; border: 1px solid #EEE;">
-      <button className="btn waves-effect waves-light">
+    <div Style="display: inline-block; padding: 0px 10px 0px 10px;">
+      <button className="btn waves-effect waves-light pink lighten-4">
         <span href="javascript:;" onClick={onSignOut}>
           Sign out
         </span>
@@ -201,7 +201,7 @@ class App extends React.Component {
   }
   signOut() {
     // clear out user from state
-    this.setState({ user: null, token: null });
+    this.setState(state => ({ user: null, tokend: null }));
   }
 
   render() {
